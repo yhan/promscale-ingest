@@ -42,7 +42,8 @@ public class Generator
     private int ingestedCount;
     private readonly double[] data;
     private readonly string orderIdFormat;
-    public readonly string[] orderIds;
+    public readonly string[] OrderIds;
+    private readonly int padEndSecondsRangeInMs;
 
     public Generator(int nbDeals) : this(nbDeals, DateTimeOffset.UtcNow - TimeSpan.FromMinutes(30), DateTimeOffset.UtcNow) {}
 
@@ -54,7 +55,7 @@ public class Generator
         // this.backTo = backTo ?? TimeSpan.FromDays(15);
         this.NbDeals = nbDeals;
         orderIdFormat = string.Join("", Enumerable.Repeat("0", (int)Math.Floor(Math.Log10(nbDeals) + 1)));
-        orderIds = BuildOrderIds(nbDeals);
+        OrderIds = BuildOrderIds(nbDeals);
 
         this.startTime = startTime;
         this.endTime = endTime;
@@ -65,6 +66,10 @@ public class Generator
         Beta.Samples(data, 0.5, 0.5);
         if(!App.IsRunningInUnitTest)
             ConsoleHelper.DisplayHistogram(data);
+
+        var tradingHourStart = new DateTimeOffset(1, 1, 1, startTime.Hour, startTime.Minute, startTime.Second, TimeSpan.Zero);
+        var tradingHourEnd = new DateTimeOffset(1, 1, 1, endTime.Hour, endTime.Minute, endTime.Second, TimeSpan.Zero);
+        padEndSecondsRangeInMs = (int)((tradingHourEnd - tradingHourStart).TotalMilliseconds);
     }
     private string[] BuildOrderIds(int nbDeals)
     {
@@ -103,7 +108,7 @@ public class Generator
     public MarketOrderVm OneMarketOrderVm()
     {
         double execNom = this.data[ingestedCount] * maxNominal;
-        var orderId = this.orderIds[rand.Next(0, orderIds.Length)];
+        var orderId = this.OrderIds[rand.Next(0, OrderIds.Length)];
         ingestedCount++;
         return new MarketOrderVm(
         Guid.NewGuid().ToString(),
@@ -141,7 +146,19 @@ public class Generator
     {
         TimeSpan gap = endTime - startTime;
         var randomGapInSec = rand.Next(0, (int)gap.TotalSeconds);
-        return startTime.AddSeconds(randomGapInSec);
+        var thatDay = startTime.AddSeconds(randomGapInSec);
+        var tradingHourStartOfThatDay = new DateTimeOffset(thatDay.Year, thatDay.Month, thatDay.Day, startTime.Hour, startTime.Minute, startTime.Second, TimeSpan.Zero);
+
+        var rnd = tradingHourStartOfThatDay.AddMilliseconds(rand.Next(0, padEndSecondsRangeInMs));  
+        
+        // var sut = new DateTimeOffset(1, 1, 1, rnd.Hour, rnd.Minute, rnd.Second, TimeSpan.Zero);
+        // if (sut > new DateTimeOffset(1, 1, 1, endTime.Hour, endTime.Minute, endTime.Second, TimeSpan.Zero))
+        //     throw new Exception("OVERFLOW END");
+        //
+        // if (sut < new DateTimeOffset(1, 1, 1, startTime.Hour, startTime.Minute, startTime.Second, TimeSpan.Zero))
+        //     throw new Exception("OVERFLOW START");
+
+        return rnd;
     }
 }
 

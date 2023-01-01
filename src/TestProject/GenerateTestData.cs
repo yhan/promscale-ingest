@@ -165,8 +165,8 @@ public class GenerateTestData
     public void OrderIds(int size)
     {
         var gen = new Generator(size);
-        Check.That(gen.orderIds).HasSize((int)(size * 0.001));
-        foreach (var orderId in gen.orderIds)
+        Check.That(gen.OrderIds).HasSize((int)(size * 0.001));
+        foreach (var orderId in gen.OrderIds)
         {
             TestContext.WriteLine(orderId);
         }

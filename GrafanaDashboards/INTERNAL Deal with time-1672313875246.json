@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 13,
-  "iteration": 1672419089209,
+  "iteration": 1672610892233,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -37,9 +37,635 @@
         "x": 0,
         "y": 0
       },
+      "id": 20,
+      "panels": [],
+      "title": "Percentile",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 11,
+        "x": 0,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "strat"
+          }
+        ]
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+          },
+          "format": "table",
+          "group": [],
+          "key": "Q-687e2b85-bdcc-476b-9d00-3eb3c7a85961-0",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select\r\n       strat,\r\n       bucket,\r\n       round(avg(value)::numeric, 0) avg_in_bucket,\r\n       round(min(value)::numeric, 0) min_in_bucket,\r\n       round(max(value)::numeric, 0) max_in_bucket,\r\n       count(0)\r\nfrom (select val(\"StrategyName_id\") strat,\r\n             value,\r\n             ntile(10) over (order by value) as bucket\r\n      from prom_metric.\"Nominal\"\r\n      where\r\n          ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n         AND val(\"VenueType_id\") IN ($venue_type)\r\n         AND val(\"Way_id\") IN ($way)\r\n         AND val(\"StrategyName_id\") IN ($strategy)\r\n         AND val(\"Venue_id\") IN ($venue_id)\r\n         --  \"time\" > now() - INTERVAL '1 days'\r\n         AND $__timeFilter(\"time\")\r\n     ) as foo\r\ngroup by strat, bucket\r\norder by bucket;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "\"ALERTS\"",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Nominal Percentile Table",
+      "transparent": true,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "log": 10,
+              "type": "log"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 13,
+        "x": 11,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.82,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "right"
+        },
+        "orientation": "auto",
+        "showValue": "always",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": -45,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+          },
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "key": "Q-687e2b85-bdcc-476b-9d00-3eb3c7a85961-0",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select\r\n       --strat,\r\n       to_char(bucket*10, '999') || '%' AS percentile_label,\r\n       round(avg(value)::numeric, 0) value--,\r\n       --round(min(value)::numeric, 0) min_in_bucket,\r\n       --round(max(value)::numeric, 0) max_in_bucket,\r\n       --count(0)\r\nfrom (select --val(\"StrategyName_id\") strat,\r\n             value,\r\n             ntile(10) over (order by value) as bucket\r\n      from prom_metric.\"Nominal\"\r\n      where\r\n         ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n           AND val(\"VenueType_id\") IN ($venue_type)\r\n           AND val(\"Way_id\") IN ($way)\r\n           AND val(\"StrategyName_id\") IN ($strategy)\r\n           AND val(\"Venue_id\") IN ($venue_id)\r\n           AND   $__timeFilter(\"time\")\r\n     ) as foo\r\ngroup by /*strat,*/ bucket\r\norder by bucket;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "\"ALERTS\"",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Nominal Percentile",
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 18,
+      "panels": [],
+      "title": "Raw data",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+          },
+          "format": "time_series",
+          "group": [],
+          "key": "Q-663acc6c-baa5-4f46-a23e-4d039595331f-0",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT time,\r\n    value\r\nFROM prom_metric.\"Nominal\"\r\nWHERE  --\"time\" > now() - INTERVAL '1 days'\r\n     $__timeFilter(\"time\")\r\n     AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\nORDER BY time;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "\"ALERTS\"",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Deals pure time serie",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 16,
+      "panels": [],
+      "title": "Histogram",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 7,
+      "options": {
+        "bucketOffset": 0,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+          },
+          "format": "time_series",
+          "group": [],
+          "key": "Q-663acc6c-baa5-4f46-a23e-4d039595331f-0",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT time,\r\n    value\r\nFROM prom_metric.\"Nominal\"\r\nWHERE  --\"time\" > now() - INTERVAL '1 days'\r\n     $__timeFilter(\"time\")\r\n     AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\nORDER BY time;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "\"ALERTS\"",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Deals Histogram",
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "fillOpacity": 65,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 8,
+      "options": {
+        "bucketOffset": 0,
+        "bucketSize": 0,
+        "combine": false,
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+          },
+          "format": "time_series",
+          "group": [],
+          "key": "Q-7899ac91-b324-4022-ac7e-5df042f97e79-0",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT time_bucket('$bucket_interval', time) AS time,\r\n    SUM(value) sum_nominal\r\nFROM prom_metric.\"Nominal\" srt\r\nWHERE -- symbol = '$symbol' AND\r\n     --\"time\" > now() - INTERVAL '3 days'\r\n     $__timeFilter(\"time\")\r\n     AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\nGROUP BY 1\r\norder by 1;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "\"ALERTS\"",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Norminal distrib every ($bucket_interval) sum",
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "id": 5,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+          },
+          "format": "table",
+          "group": [],
+          "key": "Q-03444669-420c-49ce-8e0f-776cb9e189a1-0",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT val(\"StrategyName_id\") AS strategy, histogram(value, 20, 4500, 5)\r\nFROM prom_metric.\"Nominal\"\r\nwhere --\"time\" > now() - INTERVAL '1 days'\r\n      $__timeFilter(\"time\")\r\n     AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\nGROUP BY \"StrategyName_id\"\r\n;",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "\"ALERTS\"",
+          "timeColumn": "\"time\"",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "[20, 4500] 5 buckets histogram",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
       "id": 13,
       "panels": [],
-      "title": "Row title",
+      "title": "Aggregation",
       "type": "row"
     },
     {
@@ -102,7 +728,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 1
+        "y": 40
       },
       "id": 10,
       "options": {
@@ -127,7 +753,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT time_bucket('$bucket_interval', time) AS time,\r\n    val(\"Way_id\") way,\r\n    val(\"VenueType_id\") venue_type,\r\n    sum(value) sum_nominal\r\nFROM prom_metric.\"Nominal\"\r\nWHERE\r\n      val(\"VenueType_id\") IN ($venue_type) AND\r\n      val(\"Way_id\") IN ($way) AND\r\n      -- \"time\" > now() - INTERVAL '30 minute'\r\n      $__timeFilter(\"time\")\r\nGROUP BY 1,2,3\r\norder by 1,2,3",
+          "rawSql": "SELECT time_bucket('$bucket_interval', time) AS time,\r\n    val(\"Way_id\") way,\r\n    val(\"VenueType_id\") venue_type,\r\n    sum(value) sum_nominal\r\nFROM prom_metric.\"Nominal\"\r\nWHERE\r\n      ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\n      -- \"time\" > now() - INTERVAL '30 minute'\r\n     AND $__timeFilter(\"time\")\r\nGROUP BY 1,2,3\r\norder by 1,2,3",
           "refId": "A",
           "select": [
             [
@@ -151,7 +777,13 @@
           ]
         }
       ],
-      "title": "venue_type by $bucket_interval",
+      "title": "by venue_type every $bucket_interval",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {}
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -214,7 +846,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 1
+        "y": 40
       },
       "id": 14,
       "options": {
@@ -239,7 +871,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT time_bucket('$bucket_interval', time) AS time,\r\n    val(\"Venue_id\"),\r\n    sum(value) sum_nominal\r\nFROM prom_metric.\"Nominal\"\r\nWHERE\r\n      --\"VenueType_id\" IN ($venue_type) AND  <-- how to achive this?\r\n       \"time\" > now() - INTERVAL '15 days'\r\n      --__timeFilter(\"time\")\r\nGROUP BY 1,2\r\norder by 1,2;",
+          "rawSql": "SELECT time_bucket('$bucket_interval', time) AS time,\r\n    val(\"Venue_id\"),\r\n    sum(value) sum_nominal\r\nFROM prom_metric.\"Nominal\"\r\nWHERE\r\n       --\"time\" > now() - INTERVAL '15 days'\r\n       $__timeFilter(\"time\")\r\n      AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\nGROUP BY 1,2\r\norder by 1,2;",
           "refId": "A",
           "select": [
             [
@@ -263,383 +895,8 @@
           ]
         }
       ],
-      "title": "venue by $bucket_interval",
+      "title": "by venue every $bucket_interval",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 11
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-          },
-          "format": "time_series",
-          "group": [],
-          "key": "Q-663acc6c-baa5-4f46-a23e-4d039595331f-0",
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT time,\r\n    value\r\nFROM prom_metric.\"Nominal\"\r\nWHERE  --\"time\" > now() - INTERVAL '1 days'\r\n     $__timeFilter(\"time\")\r\nORDER BY time;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "\"ALERTS\"",
-          "timeColumn": "\"time\"",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Deals",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 11
-      },
-      "id": 7,
-      "options": {
-        "bucketOffset": 0,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-          },
-          "format": "time_series",
-          "group": [],
-          "key": "Q-663acc6c-baa5-4f46-a23e-4d039595331f-0",
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT time,\r\n    value\r\nFROM prom_metric.\"Nominal\" srt\r\nWHERE  --\"time\" > now() - INTERVAL '1 days'\r\n     $__timeFilter(\"time\")\r\n     --AND value > 1\r\n     --AND value < 1000\r\nORDER BY time;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "\"ALERTS\"",
-          "timeColumn": "\"time\"",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Deals Histogram",
-      "type": "histogram"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 65,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 19
-      },
-      "id": 8,
-      "options": {
-        "bucketOffset": 0,
-        "bucketSize": 0,
-        "combine": false,
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-          },
-          "format": "time_series",
-          "group": [],
-          "key": "Q-7899ac91-b324-4022-ac7e-5df042f97e79-0",
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT time_bucket('$bucket_interval', time) AS time,\r\n    SUM(value) sum_nominal\r\nFROM prom_metric.\"Nominal\" srt\r\nWHERE -- symbol = '$symbol' AND\r\n     --\"time\" > now() - INTERVAL '3 days'\r\n       $__timeFilter(\"time\")\r\nGROUP BY 1\r\norder by 1;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "\"ALERTS\"",
-          "timeColumn": "\"time\"",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Norminal distrib ($bucket_interval) sum",
-      "type": "histogram"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 19
-      },
-      "id": 5,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-          },
-          "format": "table",
-          "group": [],
-          "key": "Q-03444669-420c-49ce-8e0f-776cb9e189a1-0",
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "SELECT val(\"StrategyName_id\") AS strategy, histogram(value, 20, 4500, 5)\r\nFROM prom_metric.\"Nominal\"\r\nwhere --\"time\" > now() - INTERVAL '1 days'\r\n      $__timeFilter(\"time\")\r\nGROUP BY \"StrategyName_id\"\r\n;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "\"ALERTS\"",
-          "timeColumn": "\"time\"",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "[20, 4500] 5 buckets histogram",
-      "type": "table"
     },
     {
       "datasource": {
@@ -667,7 +924,7 @@
         "h": 15,
         "w": 9,
         "x": 0,
-        "y": 27
+        "y": 50
       },
       "id": 2,
       "options": {
@@ -707,7 +964,7 @@
           "key": "Q-99834caf-6485-4cf4-98b8-d7c00443f012-0",
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "  SELECT\r\n  val(\"StrategyName_id\") as \"Strategy\",\r\n  val(\"VenueCategory_id\") as \"VenueCategory\",\r\n  sum(value)\r\nFROM \"Nominal\"\r\nWHERE\r\n $__timeFilter(\"time\")  \r\n  group by \"StrategyName_id\",\"VenueCategory_id\"",
+          "rawSql": "  SELECT\r\n  val(\"StrategyName_id\") as \"Strategy\",\r\n  val(\"VenueCategory_id\") as \"VenueCategory\",\r\n  sum(value)\r\nFROM \"Nominal\"\r\nWHERE\r\n $__timeFilter(\"time\")  \r\n AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\n  group by \"StrategyName_id\",\"VenueCategory_id\"",
           "refId": "A",
           "select": [
             [
@@ -820,7 +1077,7 @@
         "h": 15,
         "w": 14,
         "x": 9,
-        "y": 27
+        "y": 50
       },
       "id": 1,
       "options": {
@@ -849,7 +1106,7 @@
           "key": "Q-687e2b85-bdcc-476b-9d00-3eb3c7a85961-0",
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "  SELECT\r\n  val(\"StrategyName_id\") as \"Strategy\",\r\n  val(\"VenueType_id\") as \"VenueType\",\r\n  sum(value)\r\nFROM \"Nominal\"\r\nWHERE\r\n $__timeFilter(\"time\")  \r\n  group by \"StrategyName_id\",\"VenueType_id\"\r\n  order by sum(value) desc",
+          "rawSql": "  SELECT\r\n  val(\"StrategyName_id\") as \"Strategy\",\r\n  val(\"VenueType_id\") as \"VenueType\",\r\n  sum(value)\r\nFROM \"Nominal\"\r\nWHERE\r\n $__timeFilter(\"time\")  \r\n AND ('$order_id' = '' OR val(\"OrderId_id\")='$order_id')\r\n     AND val(\"VenueType_id\") IN ($venue_type)\r\n     AND val(\"Way_id\") IN ($way)\r\n     AND val(\"StrategyName_id\") IN ($strategy)\r\n     AND val(\"Venue_id\") IN ($venue_id)\r\n  group by \"StrategyName_id\",\"VenueType_id\"\r\n  order by sum(value) desc",
           "refId": "A",
           "select": [
             [
@@ -875,213 +1132,6 @@
       ],
       "title": "Strategy, VenueType",
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "displayMode": "auto",
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 11,
-        "x": 0,
-        "y": 42
-      },
-      "id": 3,
-      "options": {
-        "footer": {
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "til"
-          }
-        ]
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-          },
-          "format": "table",
-          "group": [],
-          "key": "Q-687e2b85-bdcc-476b-9d00-3eb3c7a85961-0",
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select\r\n       --strat,\r\n       bucket,\r\n       round(avg(value)::numeric, 0) avg_in_bucket,\r\n       round(min(value)::numeric, 0) min_in_bucket,\r\n       round(max(value)::numeric, 0) max_in_bucket,\r\n       count(0)\r\nfrom (select val(\"StrategyName_id\") strat,\r\n             value,\r\n             ntile(10) over (order by value) as bucket\r\n      from prom_metric.\"Nominal\"\r\n      where\r\n          --val(\"StrategyName_id\") = 'Hit' and\r\n          \"time\" > now() - INTERVAL '1 days'\r\n         --AND $__timeFilter(\"time\")\r\n     ) as foo\r\ngroup by /*strat,*/ bucket\r\norder by bucket;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "\"ALERTS\"",
-          "timeColumn": "\"time\"",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Nominal Percentile Table",
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisGridShow": true,
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMin": 0,
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "log": 10,
-              "type": "log"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "currencyEUR"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 13,
-        "x": 11,
-        "y": 42
-      },
-      "id": 4,
-      "options": {
-        "barRadius": 0,
-        "barWidth": 0.82,
-        "groupWidth": 0.7,
-        "legend": {
-          "calcs": [],
-          "displayMode": "hidden",
-          "placement": "right"
-        },
-        "orientation": "auto",
-        "showValue": "always",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        },
-        "xTickLabelRotation": -45,
-        "xTickLabelSpacing": 0
-      },
-      "pluginVersion": "9.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "postgres",
-            "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
-          },
-          "format": "table",
-          "group": [],
-          "hide": false,
-          "key": "Q-687e2b85-bdcc-476b-9d00-3eb3c7a85961-0",
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "select\r\n       --strat,\r\n       to_char(bucket*10, '999') || '%' AS percentile_label,\r\n       round(avg(value)::numeric, 0) value--,\r\n       --round(min(value)::numeric, 0) min_in_bucket,\r\n       --round(max(value)::numeric, 0) max_in_bucket,\r\n       --count(0)\r\nfrom (select --val(\"StrategyName_id\") strat,\r\n             value,\r\n             ntile(10) over (order by value) as bucket\r\n      from prom_metric.\"Nominal\"\r\n      where\r\n          --val(\"StrategyName_id\") = 'Hit' and\r\n          --\"time\" > now() - INTERVAL '1 days'\r\n         $__timeFilter(\"time\")\r\n     ) as foo\r\ngroup by /*strat,*/ bucket\r\norder by bucket;",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "\"ALERTS\"",
-          "timeColumn": "\"time\"",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Nominal Percentile",
-      "type": "barchart"
     }
   ],
   "refresh": false,
@@ -1144,6 +1194,11 @@
           },
           {
             "selected": false,
+            "text": "2h",
+            "value": "2h"
+          },
+          {
+            "selected": false,
             "text": "6h",
             "value": "6h"
           },
@@ -1173,7 +1228,7 @@
             "value": "30d"
           }
         ],
-        "query": "1s, 10s, 30s,1m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
+        "query": "1s, 10s, 30s,1m,10m,30m,1h,2h,6h,12h,1d,7d,14d,30d",
         "queryValue": "",
         "refresh": 2,
         "skipUrlSync": false,
@@ -1183,29 +1238,23 @@
         "current": {
           "selected": true,
           "text": [
-            "DarkPool",
-            "InternalMarket",
-            "Main",
-            "Secondary"
+            "Main"
           ],
           "value": [
-            "DarkPool",
-            "InternalMarket",
-            "Main",
-            "Secondary"
+            "Main"
           ]
         },
         "datasource": {
           "type": "postgres",
           "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
         },
-        "definition": "select distinct val(\"VenueType_id\") from prom_metric.\"Nominal\" where \"time\" > now() - INTERVAL '25 minute';",
+        "definition": "select distinct val(\"VenueType_id\") from prom_metric.\"Nominal\" where \"time\" >date_trunc('day', now());",
         "hide": 0,
         "includeAll": false,
         "multi": true,
         "name": "venue_type",
         "options": [],
-        "query": "select distinct val(\"VenueType_id\") from prom_metric.\"Nominal\" where \"time\" > now() - INTERVAL '25 minute';",
+        "query": "select distinct val(\"VenueType_id\") from prom_metric.\"Nominal\" where \"time\" >date_trunc('day', now());",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1216,25 +1265,114 @@
         "current": {
           "selected": true,
           "text": [
-            "Buy",
-            "Sell"
+            "Sell",
+            "Buy"
           ],
           "value": [
-            "Buy",
-            "Sell"
+            "Sell",
+            "Buy"
           ]
         },
         "datasource": {
           "type": "postgres",
           "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
         },
-        "definition": "select distinct val(\"Way_id\") from prom_metric.\"Nominal\" where \"time\" > now() - INTERVAL '30 minute';",
+        "definition": "select distinct val(\"Way_id\") from prom_metric.\"Nominal\" where \"time\" > date_trunc('day', now());",
         "hide": 0,
         "includeAll": false,
         "multi": true,
         "name": "way",
         "options": [],
-        "query": "select distinct val(\"Way_id\") from prom_metric.\"Nominal\" where \"time\" > now() - INTERVAL '30 minute';",
+        "query": "select distinct val(\"Way_id\") from prom_metric.\"Nominal\" where \"time\" > date_trunc('day', now());",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "Quote",
+            "Hit",
+            "Fixing",
+            "DualQuote"
+          ],
+          "value": [
+            "Quote",
+            "Hit",
+            "Fixing",
+            "DualQuote"
+          ]
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+        },
+        "definition": "select distinct val(\"StrategyName_id\") from prom_metric.\"Nominal\" where \"time\" >date_trunc('day', now());",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "strategy",
+        "options": [],
+        "query": "select distinct val(\"StrategyName_id\") from prom_metric.\"Nominal\" where \"time\" >date_trunc('day', now());",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "name": "order_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "ChiX",
+            "ENA-main",
+            "ENX",
+            "Turquoise",
+            "SGSI",
+            "GER-main"
+          ],
+          "value": [
+            "ChiX",
+            "ENA-main",
+            "ENX",
+            "Turquoise",
+            "SGSI",
+            "GER-main"
+          ]
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "c4729dfb8ceeaa0372ef27403a3932695eee995d"
+        },
+        "definition": "select distinct val(\"Venue_id\") from prom_metric.\"Nominal\" where \"time\" >date_trunc('day', now());",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "venue_id",
+        "options": [],
+        "query": "select distinct val(\"Venue_id\") from prom_metric.\"Nominal\" where \"time\" >date_trunc('day', now());",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1251,6 +1389,6 @@
   "timezone": "",
   "title": "Deal with time",
   "uid": "eZvGxTpVz",
-  "version": 54,
+  "version": 76,
   "weekStart": ""
 }

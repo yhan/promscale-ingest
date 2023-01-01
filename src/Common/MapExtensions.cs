@@ -29,7 +29,7 @@ public static class MapExtensions
             {
                 new[]
                 {
-                    x.Timestamp.ToUnixTimeMilliseconds(), x.ExecNom
+                    (long)x.Timestamp.ToUnixTimeMilliseconds(), x.ExecNom
                 }
             }
         };

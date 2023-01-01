@@ -16,6 +16,7 @@ public class PromsScaleController : ControllerBase
     private readonly int nbDeals;
     private readonly DateTimeOffset startTime;
     private readonly DateTimeOffset endTime;
+    private readonly int ingestBatchSize;
 
     public PromsScaleController(PromsScaleStat stat, IConfiguration config)
     {
@@ -25,6 +26,8 @@ public class PromsScaleController : ControllerBase
         
         this.startTime = DateTimeOffset.Parse(config["StartTime"]);
         this.endTime = DateTimeOffset.Parse(config["EndTime"]);
+
+        this.ingestBatchSize = int.Parse(config["IngestBatchSize"]);
     }
 
     [HttpPost("AppendDeals")]
@@ -39,13 +42,18 @@ public class PromsScaleController : ControllerBase
         var url = new Uri("http://localhost:9201/write");
         
         var sw = new Stopwatch();
+        var jsb = new StringBuilder();
         for (int i = 0; i < generator.NbDeals; i++)
         {
             var metric = generator.OneMarketOrderVm().MapToMetric();
-            var json = JsonConvert.SerializeObject(metric);
-            var data = new StringContent(json, Encoding.UTF8, "application/json");
+            jsb.AppendLine(JsonConvert.SerializeObject(metric));
             stat.Resume();
-            _ = await httpClient.PostAsync(url, data);
+            if((i != 0 && i % ingestBatchSize == 0) || i+1 == nbDeals)
+            {
+                var data = new StringContent(jsb.ToString(), Encoding.UTF8, "application/json");
+                _ = await httpClient.PostAsync(url, data);
+                jsb.Clear();
+            }
             stat.RecordThenSuspend();
            
             sw.Reset();

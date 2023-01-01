@@ -79,7 +79,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "currencyEUR"
         },
         "overrides": []
       },
@@ -112,7 +113,7 @@
           "key": "Q-f58f0075-9b4f-40c6-8b04-75972e5ce8bf-0",
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select extract(hour from hour::timestamp) AS time, avg(\"sum\") AS today from (\r\nSELECT time_bucket('1 hours', \"time\") AS \"hour\",\r\n       sum(value) AS \"sum\"\r\n      FROM \"Nominal\"\r\n      WHERE \"time\" > now() - INTERVAL '1 days'\r\n      group by hour\r\n      order by hour) t\r\ngroup by time\r\norder by time;",
+          "rawSql": "select extract(hour from hour::timestamp) AS time, avg(\"sum\") AS today from (\r\nSELECT time_bucket('1 hours', \"time\") AS \"hour\",\r\n       sum(value) AS \"sum\"\r\n      FROM \"Nominal\"\r\n      WHERE \"time\" >  date_trunc('day', now())\r\n      group by hour\r\n      order by hour) t\r\ngroup by time\r\norder by time;",
           "refId": "A",
           "select": [
             [
@@ -145,7 +146,7 @@
           "key": "Q-e8cd23ec-16e6-4b40-af11-3248153c464f-1",
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select extract(hour from hour::timestamp) AS time, avg(\"sum\") AS last_15d from (\r\nSELECT time_bucket('1 hours', \"time\") AS hour,\r\n       sum(value) AS \"sum\"\r\n      FROM \"Nominal\"\r\n      WHERE \"time\" > now() - INTERVAL '15 days'\r\n      AND \"time\" < now() - INTERVAL '1 days'\r\n      group by hour\r\n      order by hour) t\r\ngroup by time\r\norder by time;",
+          "rawSql": "select extract(hour from hour::timestamp) AS time, avg(\"sum\") AS last_15d from (\r\nSELECT time_bucket('1 hours', \"time\") AS hour,\r\n       sum(value) AS \"sum\"\r\n      FROM \"Nominal\"\r\n      WHERE \"time\" >  date_trunc('day', now() - INTERVAL '15 days') --start_of_day_minus_15d\r\n      AND \"time\" < date_trunc('day', now()) - interval '1 second' --end_of_yesterday\r\n      group by hour\r\n      order by hour) t\r\ngroup by time\r\norder by time;",
           "refId": "B",
           "select": [
             [
@@ -188,6 +189,6 @@
   "timezone": "",
   "title": "Deals Hour by Hour",
   "uid": "0kQS1Tp4k",
-  "version": 14,
+  "version": 17,
   "weekStart": ""
 }

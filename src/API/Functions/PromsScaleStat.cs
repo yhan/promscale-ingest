@@ -8,12 +8,18 @@ public class PromsScaleStat
     private int alreadyAppended = 0;
 
     private readonly Stopwatch sw = new();
-    public dynamic Value() => new
+    public dynamic Value()
     {
-        AlreadyAppended = alreadyAppended,
-        Duration = TimeSpan.FromMilliseconds(totalDurationInMs),
-        IngestRatePerSec = alreadyAppended / (totalDurationInMs / 1000)
-    };
+        if (totalDurationInMs == 0)
+            return "Ingest has not started. Can't provide stat";
+        
+        return new
+        {
+            AlreadyAppended = alreadyAppended,
+            Duration = TimeSpan.FromMilliseconds(totalDurationInMs),
+            IngestRatePerSec = alreadyAppended / (totalDurationInMs / 1000)
+        };
+    }
 
     public void Resume()
     {
