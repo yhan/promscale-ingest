@@ -9,6 +9,7 @@ using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
+using NFluent;
 
 namespace TestProject;
 
@@ -159,34 +160,32 @@ public class GenerateTestData
         _ = generator.Select(Enumerable.Range(0, 100).ToArray());
     }
 
-
-    [Test]
-    public void Test3()
+    [TestCase(500000)]
+    [TestCase(1000)]
+    public void OrderIds(int size)
     {
-        var generator = new Generator(1);
-    }
-    
-    [Test]
-    public void Test()
-    {
-        var ingestedCount = 0;
-        while (ingestedCount < 100)
+        var gen = new Generator(size);
+        Check.That(gen.orderIds).HasSize((int)(size * 0.001));
+        foreach (var orderId in gen.orderIds)
         {
-            TestContext.WriteLine($"{ingestedCount}{ingestedCount % 4 == 0}");
-            ingestedCount++;
+            TestContext.WriteLine(orderId);
         }
     }
 
     [Test]
-    public void Test2()
+    public void NotEnoughDeals()
     {
-        var rand = new Random();
-        int i = 0;
-        while (i<100)
-        {
-            TestContext.WriteLine(rand.Next(0, 2));    
-            i++;
-        }
-        
+        int size = 999;
+        Check.ThatCode(() => _ = new Generator(size)).Throws<ArgumentException>();
+    }
+}
+
+[SetUpFixture]
+public class AssemblyInitializer
+{
+    [OneTimeSetUp] 
+    public void Initialize()
+    {
+        App.IsRunningInUnitTest = true;
     }
 }

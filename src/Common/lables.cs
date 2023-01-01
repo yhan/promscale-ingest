@@ -12,6 +12,7 @@ public class lables
     public string VenueType { get; set; }
     public string Venue { get; set; }
     public string TopLevelStrategyName { get; set; }
+    public string OrderId { get; set; }
 }
 
 public class NominalMetric

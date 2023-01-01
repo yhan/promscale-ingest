@@ -17,6 +17,7 @@
         <!--        temp tables NOT dropped        -->
         <PackageReference Include="EFCore.BulkExtensions" Version="6.6.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.0" />
+        <PackageReference Include="NFluent" Version="3.0.0.277-beta" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.11" />
 
         

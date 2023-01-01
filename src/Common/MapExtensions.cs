@@ -15,6 +15,7 @@ public static class MapExtensions
             {
                 __name__ = "Nominal",
                 Id = x.Id,
+                OrderId = x.OrderId,
                 InstrumentType = x.InstrumentType.ToString(),
                 Counterparty = x.Counterparty,
                 VenueCategory = x.VenueCategory.ToString(),

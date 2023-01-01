@@ -2,12 +2,14 @@ namespace Common;
 
 public class MarketOrderVm
 {
-    public MarketOrderVm(string id, string topLevelStrategyName, string strategyName, string way, double execNom,
+    public MarketOrderVm(string id, string orderId, string instrId, string topLevelStrategyName, string strategyName, string way, double execNom,
         string instanceId,
         string counterparty, InstrumentType instrumentType, VenueCategory venueCategory, string venueId
         , VenueType venueType, DateTimeOffset timestamp)
     {
         Id = id;
+        OrderId = orderId;
+        InstrId = instrId;
         TopLevelStrategyName = topLevelStrategyName;
         StrategyName = strategyName;
         Way = way;
@@ -41,5 +43,7 @@ public class MarketOrderVm
     public VenueType VenueType { get;  set;}
 
     public string Id { get; set; }
+    public string OrderId { get; }
+    public string InstrId { get; set; }
     public string TopLevelStrategyName { get; set; }
 }
